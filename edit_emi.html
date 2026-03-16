@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit EMI - EMI Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1>EMI Manager</h1>
+            <div class="nav-links">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="add_emi.html">Add EMI</a>
+                <a href="analytics.html">Analytics</a>
+                <a href="#" onclick="logout(); return false;">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-box">
+            <h2>Edit EMI</h2>
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            <div id="loading" class="loading">Loading EMI details...</div>
+            
+            <form id="editEMIForm" style="display: none;">
+                <input type="hidden" id="emi_id">
+                <div class="form-group">
+                    <label for="lender_name">Lender Name</label>
+                    <input type="text" id="lender_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="loan_amount">Loan Amount (₹)</label>
+                    <input type="number" id="loan_amount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="interest_rate">Interest Rate (% per annum)</label>
+                    <input type="number" id="interest_rate" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="tenure_months">Tenure (Months)</label>
+                    <input type="number" id="tenure_months" required>
+                </div>
+                <div class="form-group">
+                    <label for="start_date">Start Date</label>
+                    <input type="date" id="start_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="due_date">Payment Due Date (Day of month)</label>
+                    <input type="number" id="due_date" min="1" max="31" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary">Update EMI</button>
+                    <a href="dashboard.html" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Supabase JS SDK from CDN -->
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    <script src="emi.js"></script>
+    
+    <script>
+        // Initialize Supabase
+        initSupabase();
+        
+        // Check authentication
+        if (!checkAuth()) {
+            window.location.href = 'login.html';
+        }
+        
+        // Get EMI ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const emiId = parseInt(urlParams.get('id'));
+        
+        if (!emiId) {
+            window.location.href = 'dashboard.html';
+        }
+        
+        // Load EMI details
+        async function loadEMIDetails() {
+            const result = await getEMI(emiId);
+            
+            if (result.success) {
+                const emi = result.data;
+                
+                document.getElementById('emi_id').value = emi.id;
+                document.getElementById('lender_name').value = emi.lender_name;
+                document.getElementById('loan_amount').value = emi.loan_amount;
+                document.getElementById('interest_rate').value = emi.interest_rate;
+                document.getElementById('tenure_months').value = emi.tenure_months;
+                document.getElementById('start_date').value = emi.start_date;
+                document.getElementById('due_date').value = emi.due_date;
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('editEMIForm').style.display = 'block';
+            } else {
+                document.getElementById('loading').textContent = 'Error loading EMI. Redirecting...';
+                setTimeout(() => window.location.href = 'dashboard.html', 2000);
+            }
+        }
+        
+        // Handle form submission
+        document.getElementById('editEMIForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const emiId = parseInt(document.getElementById('emi_id').value);
+            const lenderName = document.getElementById('lender_name').value;
+            const loanAmount = parseFloat(document.getElementById('loan_amount').value);
+            const interestRate = parseFloat(document.getElementById('interest_rate').value);
+            const tenureMonths = parseInt(document.getElementById('tenure_months').value);
+            const startDate = document.getElementById('start_date').value;
+            const dueDate = parseInt(document.getElementById('due_date').value);
+            const errorDiv = document.getElementById('error-message');
+            
+            // Show loading
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Updating EMI...';
+            submitBtn.disabled = true;
+            
+            const result = await updateEMI(emiId, lenderName, loanAmount, interestRate, tenureMonths, startDate, dueDate);
+            
+            if (result.success) {
+                alert('EMI updated successfully!');
+                window.location.href = 'dashboard.html';
+            } else {
+                errorDiv.textContent = result.error;
+                errorDiv.style.display = 'block';
+                submitBtn.textContent = 'Update EMI';
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Load EMI details on page load
+        loadEMIDetails();
+    </script>
+</body>
+</html>

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - EMI Manager</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('https://images.unsplash.com/photo-1559526324-4b87b5e36e44') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin: 0 0 10px 0;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(45deg, #00e5ff, #00bcd4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .admin-info {
+            background: rgba(0, 188, 212, 0.2);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 229, 255, 0.4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .data-section {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .export-btn {
+            background: linear-gradient(45deg, #00bcd4, #00e5ff);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4);
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 188, 212, 0.6);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: white;
+        }
+
+        th {
+            background: linear-gradient(45deg, #00bcd4, #0097a7);
+            padding: 18px 20px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-logout {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .btn-logout:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(255, 107, 107, 0.6);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .no-data i {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container { margin: 10px; padding: 20px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="btn-logout" onclick="logoutAdmin()">🚪 Logout</button>
+
+    <div class="overlay" id="loadingOverlay">
+        <div class="dashboard-container">
+            <div class="loading">
+                🔍 Verifying Admin Access...
+            </div>
+        </div>
+    </div>
+
+    <div id="mainDashboard" style="display: none;">
+        <div class="dashboard-container">
+            <!-- Header -->
+            <div class="header">
+                <h1>Admin Dashboard</h1>
+                <p>EMI Manager - Complete System Analytics</p>
+            </div>
+
+            <!-- Admin Info -->
+            <div class="admin-info">
+                <div>
+                    <strong>👨‍💼 Admin:</strong> <span id="adminEmail">Loading...</span>
+                </div>
+                <div>
+                    <button class="export-btn" onclick="exportAllData()">📊 Export All Data (CSV)</button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-number" id="totalUsers">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-number" id="totalEmis">0</div>
+                    <div class="stat-label">Total EMIs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-number" id="totalAmount">₹0</div>
+                    <div class="stat-label">Total Loan Amount</div>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="data-section">
+                <div class="section-header">
+                    <h3 class="section-title">👥 Registered Users</h3>
+                    <button class="export-btn" onclick="exportUsersCSV()">📥 Export Users CSV</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Registration Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr><td colspan="4" class="no-data">🔄 Loading users...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- EMIs Table -->
+            <div class="data-section">
+                <div class="section-header">
+                    <h3 class="section-title">💰 All EMIs</h3>
+                    <button class="export-btn" onclick="exportEmisCSV()">📥 Export EMIs CSV</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Lender</th>
+                                <th>Loan Amount</th>
+                                <th>Interest Rate</th>
+                                <th>Tenure (Months)</th>
+                                <th>Start Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="emisTableBody">
+                            <tr><td colspan="7" class="no-data">🔄 Loading EMIs...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   <script>
+
+console.log("Admin Dashboard Loaded");
+
+let usersData = [];
+let emisData = [];
+
+async function checkAdminAuth(){
+
+    try{
+
+        const res = await fetch("http://localhost:3000/check-admin-auth",{
+            credentials:"include"
+        });
+
+        const data = await res.json();
+
+        if(!data.loggedIn){
+            window.location.href="admin-login.html";
+            return;
+        }
+
+        document.getElementById("adminEmail").textContent = data.admin.email;
+
+        document.getElementById("loadingOverlay").style.display="none";
+        document.getElementById("mainDashboard").style.display="block";
+
+        loadAllData();
+
+    }catch(err){
+
+        console.error(err);
+        window.location.href="admin-login.html";
+
+    }
+
+}
+
+async function loadAllData(){
+
+    await loadStats();
+    await loadUsers();
+    await loadEmis();
+
+}
+
+/* ================= LOAD STATS ================= */
+
+async function loadStats(){
+
+    try{
+
+        const res = await fetch("http://localhost:3000/admin/stats",{
+            credentials:"include"
+        });
+
+        const data = await res.json();
+
+        if(data.success){
+
+            document.getElementById("totalUsers").textContent =
+            data.stats.totalUsers;
+
+            document.getElementById("totalEmis").textContent =
+            data.stats.totalEmis;
+
+            document.getElementById("totalAmount").textContent =
+            "₹" + data.stats.totalAmount;
+
+        }
+
+    }catch(err){
+        console.log("Stats error",err);
+    }
+
+}
+
+/* ================= LOAD USERS ================= */
+
+async function loadUsers(){
+
+    try{
+
+        const res = await fetch("http://localhost:3000/admin/users",{
+            credentials:"include"
+        });
+
+        const data = await res.json();
+
+        usersData = data.data || [];
+
+        const tbody = document.getElementById("usersTableBody");
+
+        if(usersData.length === 0){
+
+            tbody.innerHTML =
+            '<tr><td colspan="4" class="no-data">No users found</td></tr>';
+
+            return;
+        }
+
+        tbody.innerHTML = usersData.map((user,index)=>`
+
+        <tr>
+        <td>${index+1}</td>
+        <td>${user.username}</td>
+        <td>${user.email}</td>
+        <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+        </tr>
+
+        `).join("");
+
+    }catch(err){
+
+        console.log("Users error",err);
+
+    }
+
+}
+
+/* ================= LOAD EMIs ================= */
+
+async function loadEmis(){
+
+    try{
+
+        const res = await fetch("http://localhost:3000/admin/emis",{
+            credentials:"include"
+        });
+
+        const data = await res.json();
+
+        emisData = data.data || [];
+
+        const tbody = document.getElementById("emisTableBody");
+
+        if(emisData.length === 0){
+
+            tbody.innerHTML =
+            '<tr><td colspan="7" class="no-data">No EMIs found</td></tr>';
+
+            return;
+
+        }
+
+        tbody.innerHTML = emisData.map((emi,index)=>`
+
+        <tr>
+        <td>${index+1}</td>
+        <td>${emi.username}</td>
+        <td>${emi.lender_name}</td>
+        <td>₹${emi.loan_amount}</td>
+        <td>${emi.interest_rate}%</td>
+        <td>${emi.tenure_months}</td>
+        <td>${emi.start_date}</td>
+        </tr>
+
+        `).join("");
+
+    }catch(err){
+
+        console.log("EMI error",err);
+
+    }
+
+}
+
+/* ================= EXPORT USERS ================= */
+
+function exportUsersCSV(){
+
+    if(usersData.length === 0){
+        alert("No users available");
+        return;
+    }
+
+    let csv = "ID,Username,Email,Registration Date\n";
+
+    usersData.forEach((user,index)=>{
+
+        const date = new Date(user.createdAt).toLocaleDateString();
+
+        csv += `${index+1},"${user.username}","${user.email}","${date}"\n`;
+
+    });
+
+    downloadCSV(csv,"users_data.csv");
+
+}
+
+/* ================= EXPORT EMIS ================= */
+
+function exportEmisCSV(){
+
+    if(emisData.length === 0){
+        alert("No EMI data available");
+        return;
+    }
+
+    let csv = "ID,User,Lender,Loan Amount,Interest Rate,Tenure,Start Date\n";
+
+    emisData.forEach((emi,index)=>{
+
+        csv += `${index+1},"${emi.username}","${emi.lender_name}",${emi.loan_amount},${emi.interest_rate},${emi.tenure_months},"${emi.start_date}"\n`;
+
+    });
+
+    downloadCSV(csv,"emis_data.csv");
+
+}
+
+/* ================= EXPORT ALL ================= */
+
+function exportAllData(){
+
+    if(usersData.length === 0 && emisData.length === 0){
+        alert("No data to export");
+        return;
+    }
+
+    let csv = "=== USERS DATA ===\n";
+    csv += "ID,Username,Email,Registration Date\n";
+
+    usersData.forEach((user,index)=>{
+
+        const date = new Date(user.createdAt).toLocaleDateString();
+
+        csv += `${index+1},"${user.username}","${user.email}","${date}"\n`;
+
+    });
+
+    csv += "\n=== EMI DATA ===\n";
+    csv += "ID,User,Lender,Loan Amount,Interest Rate,Tenure,Start Date\n";
+
+    emisData.forEach((emi,index)=>{
+
+        csv += `${index+1},"${emi.username}","${emi.lender_name}",${emi.loan_amount},${emi.interest_rate},${emi.tenure_months},"${emi.start_date}"\n`;
+
+    });
+
+    downloadCSV(csv,"complete_system_data.csv");
+
+}
+
+/* ================= DOWNLOAD CSV ================= */
+
+function downloadCSV(csv,filename){
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.display = "none";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+}
+
+/* ================= LOGOUT ================= */
+
+async function logoutAdmin(){
+
+    await fetch("http://localhost:3000/admin-logout",{
+        credentials:"include"
+    });
+
+    window.location.href="admin-login.html";
+
+}
+
+checkAdminAuth();
+
+</script>
+</body>
+</html>

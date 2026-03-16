@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EMI Manager</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                url("https://images.unsplash.com/photo-1554224155-6726b3ff858f") no-repeat center center/cover;
+            color: white;
+        }
+
+        /* ================= NAVBAR ================= */
+        .navbar {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 18px 40px;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 17px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links .active {
+            color: #00c6ff;
+        }
+
+        /* ================= MAIN CONTAINER ================= */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .welcome-section {
+            margin-bottom: 35px;
+        }
+
+        .welcome-section h2 {
+            font-size: 28px;
+        }
+
+        /* ================= STATS ================= */
+        .stats-container {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 250px;
+            padding: 30px;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.5);
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .stat-card h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00c6ff;
+        }
+
+        /* ================= EMI SECTION ================= */
+        .emis-section h3 {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        .emis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .emi-card {
+            padding: 25px;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.6);
+            transition: 0.3s;
+        }
+
+        .emi-card:hover {
+            transform: scale(1.03);
+        }
+
+        .emi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .emi-header h4 {
+            font-size: 20px;
+        }
+
+        .emi-details {
+            font-size: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+
+        .highlight {
+            color: #00ffcc;
+            font-weight: bold;
+        }
+
+        /* ================= BUTTON ================= */
+        .btn-small {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .btn-delete {
+            background: #ff4d4d;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #cc0000;
+        }
+
+        .loading,
+        .empty-state {
+            font-size: 18px;
+        }
+
+        .empty-state a {
+            color: #00c6ff;
+            text-decoration: none;
+        }
+
+        @media(max-width: 768px) {
+            .stats-container {
+                flex-direction: column;
+            }
+        }
+
+        /* ================= CHATBOT ================= */
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 999;
+        }
+
+        .chatbot-toggle {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 26px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            transition: 0.3s;
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .chatbot-box {
+            width: 340px;
+            height: 480px;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 20px;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+
+        .bot-message {
+            background: #1f1f1f;
+            padding: 10px 14px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            width: fit-content;
+        }
+
+        .user-message {
+            background: #0072ff;
+            padding: 10px 14px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            margin-left: auto;
+            width: fit-content;
+        }
+
+        .chatbot-input {
+            display: flex;
+            padding: 10px;
+            background: #111;
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+        }
+
+        .chatbot-input button {
+            margin-left: 8px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: none;
+            background: #0072ff;
+            color: white;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Typing effect */
+        .typing {
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .dots::after {
+            content: "";
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0% {
+                content: ".";
+            }
+
+            33% {
+                content: "..";
+            }
+
+            66% {
+                content: "...";
+            }
+
+            100% {
+                content: ".";
+            }
+        }
+
+        /* Smooth fade-in */
+        .fade-in {
+            animation: fadeMessage 0.4s ease-in-out;
+        }
+
+        @keyframes fadeMessage {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <h2>EMI Manager</h1>
+                <div class="nav-links" style="font-weight: bold;">
+                    <a href="dashboard.html" class="active">Dashboard</a>
+                    <a href="add_emi.html">Add EMI</a>
+                    <a href="analytics.html">Analytics</a>
+                    <a href="#" onclick="logout(); return false;">Logout</a>
+                </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h2>Welcome, <span id="username"></span>!</h2>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Total EMIs</h3>
+                <p class="stat-number" id="total-emis">0</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Total Monthly Payment</h3>
+                <p class="stat-number" id="total-monthly">₹0.00</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Active Loans</h3>
+                <p class="stat-number" id="active-loans">0</p>
+            </div>
+        </div>
+
+        <div class="emis-section">
+            <h3>Your EMIs</h3>
+            <div id="emis-container">
+                <div class="loading">Loading EMIs...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CHATBOT ================= -->
+    <div class="chatbot-container">
+
+        <div class="chatbot-toggle" onclick="toggleChat()">
+            💬
+        </div>
+
+        <div class="chatbot-box" id="chatbotBox">
+            <div class="chatbot-header">
+                EMI Assistant
+                <span onclick="toggleChat()" style="cursor:pointer;">✖</span>
+            </div>
+
+            <div class="chatbot-messages" id="chatMessages">
+                <div class="bot-message">
+                    👋 Hello! Ask me about your EMIs.
+                </div>
+            </div>
+
+            <div class="chatbot-input">
+                <input type="text" id="chatInput" placeholder="Type your question..." />
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ==========================
+        // CHECK AUTH
+        // ==========================
+        async function checkAuth() {
+            const response = await fetch("http://localhost:3000/check-auth", {
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if (!data.loggedIn) {
+                window.location.href = "login.html";
+            } else {
+                document.getElementById("username").textContent = data.user.username;
+            }
+        }
+
+        // ==========================
+        // FORMAT CURRENCY
+        // ==========================
+        function formatCurrency(amount) {
+            return "₹" + parseFloat(amount).toLocaleString("en-IN", {
+                minimumFractionDigits: 2
+            });
+        }
+
+        // ==========================
+        // LOAD EMIs
+        // ==========================
+        async function loadEMIs() {
+            const response = await fetch("http://localhost:3000/get-emis", {
+                credentials: "include"
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                displayEMIs(result.data);
+            } else {
+                document.getElementById("emis-container").innerHTML =
+                    "<p>Error loading EMIs</p>";
+            }
+        }
+
+        // ==========================
+        // DISPLAY EMIs
+        // ==========================
+        function displayEMIs(emis) {
+            const container = document.getElementById("emis-container");
+
+            if (!emis || emis.length === 0) {
+                container.innerHTML =
+                    '<div class="empty-state"><p>No EMIs found. <a href="add_emi.html">Add your first EMI</a></p></div>';
+                return;
+            }
+
+            // Calculate stats
+            const totalEMIs = emis.length;
+            const totalMonthly = emis.reduce((sum, emi) => {
+                return sum + calculateMonthlyEMI(
+                    emi.loan_amount,
+                    emi.interest_rate,
+                    emi.tenure_months
+                );
+            }, 0);
+
+            document.getElementById("total-emis").textContent = totalEMIs;
+            document.getElementById("total-monthly").textContent = formatCurrency(totalMonthly);
+            document.getElementById("active-loans").textContent = totalEMIs;
+
+            container.innerHTML = '<div class="emis-grid">' + emis.map(emi => {
+                const monthlyEMI = calculateMonthlyEMI(
+                    emi.loan_amount,
+                    emi.interest_rate,
+                    emi.tenure_months
+                );
+
+                return `
+                <div class="emi-card">
+                    <div class="emi-header">
+                        <h4>${emi.lender_name}</h4>
+                        <div>
+                            <button onclick="deleteEMI('${emi._id}')" class="btn-small btn-delete">Delete</button>
+                        </div>
+                    </div>
+
+                    <div class="emi-details">
+                        <div class="detail-row">
+                            <span>Loan Amount:</span>
+                            <span>${formatCurrency(emi.loan_amount)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Monthly EMI:</span>
+                            <span class="highlight">${formatCurrency(monthlyEMI)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Interest Rate:</span>
+                            <span>${emi.interest_rate}%</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Tenure:</span>
+                            <span>${emi.tenure_months} months</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Due Date:</span>
+                            <span>${emi.due_date} of every month</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('') + '</div>';
+        }
+
+        // ==========================
+        // EMI CALCULATION FORMULA
+        // ==========================
+        function calculateMonthlyEMI(P, annualRate, tenureMonths) {
+            const r = (annualRate / 12) / 100;
+            const n = tenureMonths;
+
+            return P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+        }
+
+        // ==========================
+        // DELETE EMI
+        // ==========================
+        async function deleteEMI(id) {
+            if (!confirm("Are you sure you want to delete this EMI?")) {
+                return;
+            }
+
+            const response = await fetch(`http://localhost:3000/delete-emi/${id}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                loadEMIs();
+            } else {
+                alert("Failed to delete EMI");
+            }
+        }
+
+        // ==========================
+        // LOGOUT
+        // ==========================
+        async function logout() {
+            await fetch("http://localhost:3000/logout", {
+                credentials: "include"
+            });
+
+            window.location.href = "login.html";
+        }
+
+        // ==========================
+        // INIT
+        // ==========================
+        checkAuth();
+        loadEMIs();
+
+        function toggleChat() {
+            const box = document.getElementById("chatbotBox");
+            box.style.display = box.style.display === "flex" ? "none" : "flex";
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("chatInput");
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chatMessages = document.getElementById("chatMessages");
+
+            // Show user message
+            const userDiv = document.createElement("div");
+            userDiv.className = "user-message";
+            userDiv.textContent = message;
+            chatMessages.appendChild(userDiv);
+
+            input.value = "";
+
+            // Scroll down
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Send to backend
+            try {
+                const response = await fetch("http://localhost:3000/chatbot", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+
+                const botDiv = document.createElement("div");
+                botDiv.className = "bot-message";
+                botDiv.textContent = data.reply || "Sorry, I couldn't understand.";
+                chatMessages.appendChild(botDiv);
+
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            } catch (err) {
+                const errorDiv = document.createElement("div");
+                errorDiv.className = "bot-message";
+                errorDiv.textContent = "Server error. Please try again.";
+                chatMessages.appendChild(errorDiv);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("chatInput");
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chatMessages = document.getElementById("chatMessages");
+
+            // Show user message
+            const userDiv = document.createElement("div");
+            userDiv.className = "user-message";
+            userDiv.textContent = message;
+            chatMessages.appendChild(userDiv);
+
+            input.value = "";
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Show typing indicator
+            const typingDiv = document.createElement("div");
+            typingDiv.className = "bot-message typing";
+            typingDiv.innerHTML = "Typing<span class='dots'>...</span>";
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const response = await fetch("http://localhost:3000/chatbot", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+
+                // Delay reply 2–3 seconds
+                setTimeout(() => {
+
+                    typingDiv.remove(); // remove typing
+
+                    const botDiv = document.createElement("div");
+                    botDiv.className = "bot-message fade-in";
+                    botDiv.textContent = data.reply || "Sorry, I couldn't understand.";
+                    chatMessages.appendChild(botDiv);
+
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                }, 2000 + Math.random() * 1000); // random 2–3 sec
+
+            } catch (err) {
+
+                setTimeout(() => {
+                    typingDiv.remove();
+
+                    const errorDiv = document.createElement("div");
+                    errorDiv.className = "bot-message";
+                    errorDiv.textContent = "Server error. Please try again.";
+                    chatMessages.appendChild(errorDiv);
+                }, 2000);
+            }
+        }
+    </script>
+
+</body>
+
+</html>

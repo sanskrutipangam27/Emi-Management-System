@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add EMI - EMI Manager</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                        url("https://images.unsplash.com/photo-1554224155-6726b3ff858f") no-repeat center center/cover;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ================= NAVBAR ================= */
+        .navbar {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 18px 40px;
+            color: white;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 17px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links .active {
+            color: #00c6ff;
+        }
+
+        /* ================= MAIN CONTAINER ================= */
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .form-box {
+            width: 100%;
+            max-width: 550px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .form-box h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        /* ================= FORM ================= */
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 15px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            background: rgba(255,255,255,0.9);
+            transition: 0.3s;
+        }
+
+        .form-group input:focus {
+            box-shadow: 0 0 8px #00c6ff;
+            transform: scale(1.02);
+        }
+
+        /* ================= BUTTONS ================= */
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            font-size: 17px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00c6ff, #0072ff);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 198, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: #444;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #222;
+        }
+
+        /* ================= ERROR ================= */
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ffb3b3;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* ================= RESPONSIVE ================= */
+        @media(max-width: 600px) {
+            .form-box {
+                padding: 25px;
+            }
+
+            .btn {
+                font-size: 15px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <h2>EMI Manager</h2>
+            <div class="nav-links" style="font-weight: bold;"> 
+                <a href="dashboard.html">Dashboard</a>
+                <a href="add_emi.html" class="active">Add EMI</a>
+                <a href="analytics.html">Analytics</a>
+                <a href="#" onclick="logout(); return false;">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-box">
+            <h2>Add New EMI</h2>
+            <div id="error-message" class="error-message" style="display: none;"></div>
+
+            <form id="addEMIForm">
+                <div class="form-group">
+                    <label>Lender Name</label>
+                    <input type="text" id="lender_name">
+                </div>
+
+                <div class="form-group">
+                    <label>Loan Amount (₹)</label>
+                    <input type="number" id="loan_amount" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Interest Rate (% per annum)</label>
+                    <input type="number" id="interest_rate" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Tenure (Months)</label>
+                    <input type="number" id="tenure_months" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" id="start_date" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Payment Due Date (Day of month)</label>
+                    <input type="number" id="due_date" required>
+                </div>
+
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary">Add EMI</button>
+                    <a href="dashboard.html" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+     <script>
+        async function checkAuth() {
+            const res = await fetch("http://localhost:3000/check-auth", {
+                credentials: "include"
+            });
+
+            const data = await res.json();
+
+            if (!data.loggedIn) {
+                window.location.href = "login.html";
+            }
+        }
+
+        checkAuth();
+
+        document.getElementById("addEMIForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const lender_name = document.getElementById("lender_name").value;
+            const loan_amount = document.getElementById("loan_amount").value;
+            const interest_rate = document.getElementById("interest_rate").value;
+            const tenure_months = document.getElementById("tenure_months").value;
+            const start_date = document.getElementById("start_date").value;
+            const due_date = document.getElementById("due_date").value;
+
+            const response = await fetch("http://localhost:3000/add-emi", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    lender_name,
+                    loan_amount,
+                    interest_rate,
+                    tenure_months,
+                    start_date,
+                    due_date
+                }),
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert("EMI Added Successfully!");
+                window.location.href = "dashboard.html";
+            } else {
+                document.getElementById("error-message").textContent = data.error;
+                document.getElementById("error-message").style.display = "block";
+            }
+        });
+
+        async function logout() {
+            await fetch("http://localhost:3000/logout", {
+                credentials: "include"
+            });
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>

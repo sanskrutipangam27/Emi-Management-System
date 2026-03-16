@@ -1,0 +1,7 @@
+{"userId":"XkRX7t1crXTSmQma","lender_name":"ABC","loan_amount":500000,"interest_rate":2,"tenure_months":6,"start_date":"2026-03-27","due_date":25,"createdAt":{"$$date":1772333894677},"_id":"8kRuViXhwpkmGXzX"}
+{"userId":"6ZFlwJveE8rwfEEg","lender_name":"Garry dada","loan_amount":150,"interest_rate":5,"tenure_months":5,"start_date":"2026-03-15","due_date":23,"createdAt":{"$$date":1772307954854},"_id":"GCujgr7Q1lZYhfxs"}
+{"userId":"PUs5KFthCCOJWudq","lender_name":"NKGSB BANK","loan_amount":6000000,"interest_rate":25,"tenure_months":5,"start_date":"2026-03-11","due_date":5,"createdAt":{"$$date":1772816812294},"_id":"NlPkEHXAqoR2CWoi"}
+{"userId":"PUs5KFthCCOJWudq","lender_name":"SBI BANK","loan_amount":500000,"interest_rate":20,"tenure_months":11,"start_date":"2026-03-27","due_date":27,"createdAt":{"$$date":1772816694842},"_id":"SA9qpe1u8kYLUf4T"}
+{"userId":"387MRjN0RkWUDZ6Z","lender_name":"HDFC ","loan_amount":50000000,"interest_rate":25,"tenure_months":12,"start_date":"2026-03-26","due_date":22,"createdAt":{"$$date":1773423079547},"_id":"TuWnFnKfQ3FAYnwL"}
+{"userId":"6ZFlwJveE8rwfEEg","lender_name":"Garry","loan_amount":7200,"interest_rate":5,"tenure_months":2,"start_date":"2026-03-09","due_date":23,"createdAt":{"$$date":1772307456380},"_id":"sa2QnFQevqFVGyxu"}
+{"userId":"XkRX7t1crXTSmQma","lender_name":"HDFC  ","loan_amount":50000000,"interest_rate":25,"tenure_months":12,"start_date":"2026-03-26","due_date":22,"createdAt":{"$$date":1773470046442},"_id":"N3ShGDBaD4l4Toly"}

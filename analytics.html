@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - EMI Manager</title>
+
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+        min-height: 100vh;
+        background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+                    url("https://images.unsplash.com/photo-1554224155-6726b3ff858f") no-repeat center center/cover;
+        color: white;
+    }
+
+    /* ================= NAVBAR ================= */
+    .navbar {
+        background: rgba(0, 0, 0, 0.9);
+        padding: 20px 60px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+
+    .nav-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .nav-links a {
+        color: white;
+        text-decoration: none;
+        margin-left: 30px;
+        font-size: 18px;
+        transition: 0.3s;
+    }
+
+    .nav-links a:hover,
+    .nav-links .active {
+        color: #00e0ff;
+    }
+
+    /* ================= MAIN CONTAINER ================= */
+    .container {
+        max-width: 1500px;
+        margin: 50px auto;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.10);
+        backdrop-filter: blur(18px);
+        border-radius: 25px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .container h2 {
+        margin-bottom: 40px;
+        font-size: 32px;
+        text-align: center;
+        letter-spacing: 1px;
+    }
+
+    /* ================= CHART GRID ================= */
+    .charts-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 40px;
+    }
+
+    .chart-box {
+        background: rgba(0, 0, 0, 0.65);
+        padding: 30px;
+        border-radius: 22px;
+        transition: 0.4s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 420px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+
+    .chart-box:hover {
+        transform: translateY(-8px);
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    .chart-box h3 {
+        margin-bottom: 25px;
+        font-size: 20px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    /* IMPORTANT: REMOVE FIXED HEIGHT */
+    /*canvas {
+        width: 100% !important;
+        height: 350px !important;
+    }*/
+
+    /* ================= RESPONSIVE ================= */
+    @media(max-width: 1200px) {
+        .charts-container {
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        }
+    }
+
+    @media(max-width: 768px) {
+        .charts-container {
+            grid-template-columns: 1fr;
+        }
+
+        .container {
+            padding: 25px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <h2>EMI Manager</h2>
+            <div class="nav-links" style="font-weight: bold;">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="add_emi.html">Add EMI</a>
+                <a href="analytics.html" class="active">Analytics</a>
+                <a href="#" onclick="logout(); return false;">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>EMI Analytics</h2>
+
+        <div class="charts-container">
+            <div class="chart-box">
+                <h3>EMI Risk Level Distribution</h3>
+                <canvas id="riskChart"></canvas>
+            </div>
+
+            <div class="chart-box">
+                <h3>Total Principal vs Total Interest</h3>
+                <canvas id="interestChart"></canvas>
+            </div>
+
+            <div class="chart-box">
+                <h3>Loan Distribution by Lender</h3>
+                <canvas id="pieChart"></canvas>
+            </div>
+
+            <div class="chart-box">
+                <h3>Monthly Payment Breakdown</h3>
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+    <script>
+        // ==========================
+        // AUTH CHECK
+        // ==========================
+        async function checkAuth() {
+            const response = await fetch("http://localhost:3000/check-auth", {
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if (!data.loggedIn) {
+                window.location.href = "login.html";
+            }
+        }
+
+        // ==========================
+        // EMI FORMULA
+        // ==========================
+        function calculateMonthlyEMI(P, annualRate, tenureMonths) {
+            const r = (annualRate / 12) / 100;
+            const n = tenureMonths;
+
+            return P * r * Math.pow(1 + r, n) /
+                (Math.pow(1 + r, n) - 1);
+        }
+
+        // ==========================
+        // LOAD DATA
+        // ==========================
+        async function loadAnalytics() {
+            const response = await fetch("http://localhost:3000/get-emis", {
+                credentials: "include"
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                processAnalytics(result.data);
+            }
+        }
+
+        // ==========================
+        // PROCESS DATA
+        // ==========================
+        function processAnalytics(emis) {
+
+            if (!emis || emis.length === 0) {
+                alert("No EMI data available for analytics.");
+                return;
+            }
+
+            let totalPrincipal = 0;
+            let totalInterest = 0;
+            let lenderMap = {};
+            let monthlyLabels = [];
+            let monthlyData = [];
+            let riskLevels = { Low: 0, Medium: 0, High: 0 };
+
+            emis.forEach(emi => {
+
+                const monthlyEMI = calculateMonthlyEMI(
+                    emi.loan_amount,
+                    emi.interest_rate,
+                    emi.tenure_months
+                );
+
+                const totalPayment = monthlyEMI * emi.tenure_months;
+                const interest = totalPayment - emi.loan_amount;
+
+                totalPrincipal += emi.loan_amount;
+                totalInterest += interest;
+
+                // Lender Distribution
+                lenderMap[emi.lender_name] =
+                    (lenderMap[emi.lender_name] || 0) + emi.loan_amount;
+
+                // Monthly Breakdown
+                monthlyLabels.push(emi.lender_name);
+                monthlyData.push(monthlyEMI.toFixed(2));
+
+                // Risk Calculation (simple logic)
+                if (emi.interest_rate < 8) {
+                    riskLevels.Low++;
+                } else if (emi.interest_rate <= 12) {
+                    riskLevels.Medium++;
+                } else {
+                    riskLevels.High++;
+                }
+            });
+
+            createRiskChart(riskLevels);
+            createInterestChart(totalPrincipal, totalInterest);
+            createPieChart(lenderMap);
+            createBarChart(monthlyLabels, monthlyData);
+        }
+
+        // ==========================
+        // CHARTS
+        // ==========================
+        function createRiskChart(data) {
+            new Chart(document.getElementById("riskChart"), {
+                type: "doughnut",
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: ["#4CAF50", "#FFC107", "#F44336"]
+                    }]
+                }
+            });
+        }
+
+        function createInterestChart(principal, interest) {
+            new Chart(document.getElementById("interestChart"), {
+                type: "bar",
+                data: {
+                    labels: ["Principal", "Interest"],
+                    datasets: [{
+                        label: "Amount (₹)",
+                        data: [principal, interest],
+                        backgroundColor: ["#2196F3", "#FF5722"]
+                    }]
+                }
+            });
+        }
+
+        function createPieChart(lenderMap) {
+            new Chart(document.getElementById("pieChart"), {
+                type: "pie",
+                data: {
+                    labels: Object.keys(lenderMap),
+                    datasets: [{
+                        data: Object.values(lenderMap),
+                        backgroundColor: [
+                            "#3F51B5",
+                            "#009688",
+                            "#E91E63",
+                            "#FF9800",
+                            "#9C27B0"
+                        ]
+                    }]
+                }
+            });
+        }
+
+        function createBarChart(labels, data) {
+            new Chart(document.getElementById("barChart"), {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Monthly EMI (₹)",
+                        data: data,
+                        backgroundColor: "#673AB7"
+                    }]
+                }
+            });
+        }
+
+        // ==========================
+        // LOGOUT
+        // ==========================
+        async function logout() {
+            await fetch("http://localhost:3000/logout", {
+                credentials: "include"
+            });
+            window.location.href = "login.html";
+        }
+
+        // INIT
+        checkAuth();
+        loadAnalytics();
+
+    </script>
+
+</body>
+
+</html>
