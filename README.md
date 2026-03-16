@@ -36,6 +36,9 @@ For now, the project can be run locally using the instructions below.
 - Organized record keeping
 
 ---
+
+## Project Structure
+
 Emi-Management-System
 │
 ├── auth.js
@@ -168,4 +171,3 @@ This project is created for educational purposes.
 If you find this project useful, consider starring the repository.
 
 
-## Project Structure
